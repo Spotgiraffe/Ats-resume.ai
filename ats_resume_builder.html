@@ -1,0 +1,1883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATS Resume Builder — 100% Score Guaranteed</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --card: #16161f;
+    --border: #2a2a38;
+    --accent: #00e5a0;
+    --accent2: #7c3aed;
+    --accent3: #f59e0b;
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --success: #00e5a0;
+    --danger: #ff4d6d;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 20% 20%, rgba(0,229,160,0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(124,58,237,0.04) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+    animation: bgPulse 8s ease-in-out infinite alternate;
+  }
+
+  @keyframes bgPulse {
+    0% { opacity: 0.5; }
+    100% { opacity: 1; }
+  }
+
+  /* HEADER */
+  header {
+    position: relative;
+    z-index: 10;
+    padding: 24px 40px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(10,10,15,0.8);
+    backdrop-filter: blur(20px);
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.4rem;
+    letter-spacing: -0.02em;
+  }
+
+  .logo span { color: var(--accent); }
+
+  .ats-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,229,160,0.1);
+    border: 1px solid rgba(0,229,160,0.3);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+
+  .ats-badge::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.3); }
+  }
+
+  /* LAYOUT */
+  .container {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    height: calc(100vh - 73px);
+  }
+
+  /* LEFT PANEL - FORM */
+  .form-panel {
+    overflow-y: auto;
+    padding: 32px 36px;
+    border-right: 1px solid var(--border);
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .form-panel::-webkit-scrollbar { width: 4px; }
+  .form-panel::-webkit-scrollbar-track { background: transparent; }
+  .form-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* RIGHT PANEL - PREVIEW */
+  .preview-panel {
+    overflow-y: auto;
+    padding: 32px;
+    background: #f0f0f0;
+    scrollbar-width: thin;
+  }
+
+  /* SECTION TABS */
+  .section-nav {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 28px;
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 4px;
+    flex-wrap: wrap;
+  }
+
+  .section-tab {
+    flex: 1;
+    min-width: max-content;
+    padding: 8px 12px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .section-tab.active {
+    background: var(--accent);
+    color: #000;
+    font-weight: 600;
+  }
+
+  .section-tab:hover:not(.active) {
+    color: var(--text);
+    background: var(--card);
+  }
+
+  /* FORM SECTIONS */
+  .form-section { display: none; }
+  .form-section.active { display: block; animation: fadeIn 0.3s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title .icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(0,229,160,0.1);
+    border: 1px solid rgba(0,229,160,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+  }
+
+  /* FORM FIELDS */
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--muted);
+    margin-bottom: 6px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  input, textarea, select {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,229,160,0.1);
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 90px;
+    line-height: 1.6;
+  }
+
+  /* ATS TIP */
+  .ats-tip {
+    background: rgba(0,229,160,0.06);
+    border: 1px solid rgba(0,229,160,0.15);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 10px 14px;
+    font-size: 0.8rem;
+    color: rgba(232,232,240,0.7);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+
+  .ats-tip strong { color: var(--accent); }
+
+  /* ENTRY CARDS */
+  .entry-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    position: relative;
+  }
+
+  .entry-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .entry-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  .btn-remove {
+    background: rgba(255,77,109,0.1);
+    border: 1px solid rgba(255,77,109,0.2);
+    color: var(--danger);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .btn-remove:hover {
+    background: rgba(255,77,109,0.2);
+  }
+
+  .btn-add {
+    width: 100%;
+    background: rgba(0,229,160,0.08);
+    border: 1px dashed rgba(0,229,160,0.3);
+    color: var(--accent);
+    border-radius: 10px;
+    padding: 11px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+    margin-top: 4px;
+  }
+
+  .btn-add:hover {
+    background: rgba(0,229,160,0.15);
+    border-color: rgba(0,229,160,0.5);
+  }
+
+  /* SKILLS INPUT */
+  .skills-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 44px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    cursor: text;
+    transition: border-color 0.2s;
+    margin-bottom: 8px;
+  }
+
+  .skills-container:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,229,160,0.1);
+  }
+
+  .skill-tag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,229,160,0.12);
+    border: 1px solid rgba(0,229,160,0.25);
+    color: var(--accent);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: default;
+    user-select: none;
+  }
+
+  .skill-tag .remove-skill {
+    cursor: pointer;
+    opacity: 0.6;
+    font-size: 1rem;
+    line-height: 1;
+    transition: opacity 0.2s;
+  }
+
+  .skill-tag .remove-skill:hover { opacity: 1; }
+
+  .skill-input {
+    flex: 1;
+    min-width: 80px;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    padding: 2px 4px;
+  }
+
+  /* ATS SCORE */
+  .score-display {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .score-ring {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+  }
+
+  .score-ring svg { transform: rotate(-90deg); }
+
+  .score-ring .bg-circle { fill: none; stroke: var(--border); stroke-width: 6; }
+  .score-ring .progress-circle {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-dasharray: 220;
+    stroke-dashoffset: 220;
+    transition: stroke-dashoffset 0.8s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .score-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+
+  .score-info h3 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 4px;
+  }
+
+  .score-info p {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .score-breakdown {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .score-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.78rem;
+  }
+
+  .score-item .label { flex: 1; color: var(--muted); }
+  .score-item .bar {
+    flex: 2;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .score-item .bar .fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.8s ease;
+  }
+  .score-item .val { color: var(--accent); font-weight: 600; min-width: 28px; text-align: right; }
+
+  /* GENERATE BUTTON */
+  .btn-generate {
+    width: 100%;
+    background: linear-gradient(135deg, var(--accent), #00c97d);
+    border: none;
+    border-radius: 12px;
+    padding: 16px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #000;
+    cursor: pointer;
+    transition: all 0.3s;
+    letter-spacing: 0.02em;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-generate::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .btn-generate:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,229,160,0.3); }
+  .btn-generate:hover::after { opacity: 1; }
+  .btn-generate:active { transform: translateY(0); }
+
+  .btn-download {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 13px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-download:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* NAV BUTTONS */
+  .nav-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  .btn-prev, .btn-next {
+    flex: 1;
+    padding: 11px;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-prev {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .btn-prev:hover { border-color: var(--text); color: var(--text); }
+
+  .btn-next {
+    background: rgba(124,58,237,0.15);
+    border: 1px solid rgba(124,58,237,0.3);
+    color: #a78bfa;
+  }
+
+  .btn-next:hover { background: rgba(124,58,237,0.25); }
+
+  /* ====== RESUME PREVIEW ====== */
+  #resume-preview {
+    background: white;
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 48px 52px;
+    font-family: 'Arial', sans-serif;
+    color: #1a1a1a;
+    font-size: 11pt;
+    line-height: 1.4;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+    border-radius: 4px;
+    min-height: 900px;
+  }
+
+  #resume-preview .r-name {
+    font-size: 22pt;
+    font-weight: 700;
+    color: #0a0a0a;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+
+  #resume-preview .r-title {
+    font-size: 11pt;
+    color: #2563eb;
+    font-weight: 600;
+    margin-bottom: 10px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  #resume-preview .r-contact {
+    font-size: 9pt;
+    color: #444;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #1a1a1a;
+    margin-bottom: 14px;
+  }
+
+  #resume-preview .r-contact span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  #resume-preview .r-section {
+    margin-bottom: 14px;
+  }
+
+  #resume-preview .r-section-title {
+    font-size: 10pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #1a1a1a;
+    border-bottom: 1.5px solid #1a1a1a;
+    padding-bottom: 3px;
+    margin-bottom: 8px;
+  }
+
+  #resume-preview .r-summary {
+    font-size: 10pt;
+    color: #333;
+    line-height: 1.6;
+  }
+
+  #resume-preview .r-entry {
+    margin-bottom: 10px;
+  }
+
+  #resume-preview .r-entry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  #resume-preview .r-entry-title {
+    font-weight: 700;
+    font-size: 10.5pt;
+    color: #0a0a0a;
+  }
+
+  #resume-preview .r-entry-date {
+    font-size: 9pt;
+    color: #555;
+    white-space: nowrap;
+  }
+
+  #resume-preview .r-entry-org {
+    font-size: 9.5pt;
+    color: #2563eb;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  #resume-preview .r-entry-location {
+    font-size: 9pt;
+    color: #666;
+  }
+
+  #resume-preview .r-bullets {
+    margin-top: 4px;
+    padding-left: 16px;
+  }
+
+  #resume-preview .r-bullets li {
+    font-size: 9.5pt;
+    color: #333;
+    line-height: 1.5;
+    margin-bottom: 2px;
+  }
+
+  #resume-preview .r-skills-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  #resume-preview .r-skill-item {
+    font-size: 9pt;
+    background: #f0f4ff;
+    border: 1px solid #d0d9ff;
+    border-radius: 3px;
+    padding: 2px 8px;
+    color: #2563eb;
+    font-weight: 500;
+  }
+
+  #resume-preview .r-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  #resume-preview .r-cert-item {
+    font-size: 9.5pt;
+  }
+
+  #resume-preview .r-cert-name {
+    font-weight: 600;
+    color: #0a0a0a;
+  }
+
+  #resume-preview .r-cert-issuer {
+    color: #555;
+    font-size: 9pt;
+  }
+
+  .empty-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 500px;
+    color: #999;
+    gap: 12px;
+    text-align: center;
+  }
+
+  .empty-preview .icon { font-size: 3rem; opacity: 0.3; }
+  .empty-preview p { font-size: 0.9rem; color: #aaa; }
+
+  /* SCORE PANEL */
+  .score-panel {
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  /* RESPONSIVE TWEAKS */
+  @media (max-width: 900px) {
+    .container { grid-template-columns: 1fr; height: auto; }
+    .preview-panel { min-height: 500px; }
+    header { padding: 16px 20px; }
+    .form-panel { padding: 20px; }
+  }
+
+  /* Scrollbar for preview */
+  .preview-panel::-webkit-scrollbar { width: 4px; }
+  .preview-panel::-webkit-scrollbar-track { background: #e0e0e0; }
+  .preview-panel::-webkit-scrollbar-thumb { background: #bbb; border-radius: 2px; }
+
+  /* Helper text */
+  .helper { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+
+  /* Progress steps */
+  .progress-bar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 24px;
+  }
+  .progress-step {
+    flex: 1;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    transition: background 0.3s;
+  }
+  .progress-step.done { background: var(--accent); }
+  .progress-step.active { background: var(--accent2); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">ATS<span>Resume</span>.AI</div>
+  <div class="ats-badge">ATS OPTIMIZED — 100% SCORE</div>
+</header>
+
+<div class="container">
+  <!-- LEFT: FORM -->
+  <div class="form-panel">
+
+    <div class="progress-bar" id="progressBar"></div>
+
+    <div class="section-nav">
+      <button class="section-tab active" onclick="goSection(0)">👤 Personal</button>
+      <button class="section-tab" onclick="goSection(1)">📝 Summary</button>
+      <button class="section-tab" onclick="goSection(2)">💼 Experience</button>
+      <button class="section-tab" onclick="goSection(3)">🎓 Education</button>
+      <button class="section-tab" onclick="goSection(4)">⚡ Skills</button>
+      <button class="section-tab" onclick="goSection(5)">🏆 More</button>
+    </div>
+
+    <!-- SECTION 0: PERSONAL -->
+    <div class="form-section active" id="sec-0">
+      <div class="section-title">
+        <div class="icon">👤</div>
+        Personal Information
+      </div>
+      <div class="ats-tip"><strong>ATS Tip:</strong> Use your real full name as it appears on official documents. Include all contact info — ATS systems parse these fields.</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>First Name *</label>
+          <input type="text" id="firstName" placeholder="John" oninput="autoUpdate()">
+        </div>
+        <div class="form-group">
+          <label>Last Name *</label>
+          <input type="text" id="lastName" placeholder="Doe" oninput="autoUpdate()">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Professional Title *</label>
+        <input type="text" id="jobTitle" placeholder="e.g. Senior Software Engineer" oninput="autoUpdate()">
+        <div class="helper">Match this exactly to the job you're applying for</div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Email Address *</label>
+          <input type="email" id="email" placeholder="john@email.com" oninput="autoUpdate()">
+        </div>
+        <div class="form-group">
+          <label>Phone Number *</label>
+          <input type="text" id="phone" placeholder="+1 (555) 000-0000" oninput="autoUpdate()">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>City, State</label>
+          <input type="text" id="location" placeholder="New York, NY" oninput="autoUpdate()">
+        </div>
+        <div class="form-group">
+          <label>LinkedIn URL</label>
+          <input type="text" id="linkedin" placeholder="linkedin.com/in/johndoe" oninput="autoUpdate()">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>GitHub / Portfolio</label>
+          <input type="text" id="github" placeholder="github.com/johndoe" oninput="autoUpdate()">
+        </div>
+        <div class="form-group">
+          <label>Website</label>
+          <input type="text" id="website" placeholder="johndoe.com" oninput="autoUpdate()">
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 1: SUMMARY -->
+    <div class="form-section" id="sec-1">
+      <div class="section-title">
+        <div class="icon">📝</div>
+        Professional Summary
+      </div>
+      <div class="ats-tip"><strong>ATS Tip:</strong> Write 3–4 sentences. Include your target job title, years of experience, top 2–3 skills, and a measurable achievement. Mirror keywords from job descriptions.</div>
+
+      <div class="form-group">
+        <label>Professional Summary *</label>
+        <textarea id="summary" rows="6" placeholder="Results-driven Software Engineer with 5+ years of experience building scalable web applications using Python, React, and AWS. Proven track record of reducing system latency by 40% and leading cross-functional teams of 8+. Seeking to leverage expertise in distributed systems at a forward-thinking technology company." oninput="autoUpdate()"></textarea>
+        <div class="helper" id="summaryCount">0 / 600 characters (aim for 300–500)</div>
+      </div>
+
+      <div class="form-group">
+        <label>Target Job Title (for ATS optimization)</label>
+        <input type="text" id="targetRole" placeholder="e.g. Full Stack Developer" oninput="autoUpdate()">
+        <div class="helper">This helps optimize keyword matching</div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: EXPERIENCE -->
+    <div class="form-section" id="sec-2">
+      <div class="section-title">
+        <div class="icon">💼</div>
+        Work Experience
+      </div>
+      <div class="ats-tip"><strong>ATS Tip:</strong> Use action verbs + numbers. "Increased sales by 30%" beats "Responsible for sales." Use standard job title formats. List most recent job first.</div>
+
+      <div id="experience-list"></div>
+      <button class="btn-add" onclick="addExperience()">+ Add Work Experience</button>
+    </div>
+
+    <!-- SECTION 3: EDUCATION -->
+    <div class="form-section" id="sec-3">
+      <div class="section-title">
+        <div class="icon">🎓</div>
+        Education
+      </div>
+      <div class="ats-tip"><strong>ATS Tip:</strong> Spell out degree names fully (e.g., "Bachelor of Science in Computer Science"). Include GPA if 3.5+. List most recent degree first.</div>
+
+      <div id="education-list"></div>
+      <button class="btn-add" onclick="addEducation()">+ Add Education</button>
+    </div>
+
+    <!-- SECTION 4: SKILLS -->
+    <div class="form-section" id="sec-4">
+      <div class="section-title">
+        <div class="icon">⚡</div>
+        Skills
+      </div>
+      <div class="ats-tip"><strong>ATS Tip:</strong> Include both hard skills (technologies, tools) and soft skills. Use exact keywords from job postings. Avoid skill ratings/bars — ATS can't parse them.</div>
+
+      <div class="form-group">
+        <label>Technical Skills</label>
+        <div class="skills-container" id="techSkillsContainer" onclick="document.getElementById('techSkillInput').focus()">
+          <input class="skill-input" id="techSkillInput" placeholder="Type a skill + Enter" onkeydown="addSkill(event, 'techSkills')">
+        </div>
+        <div class="helper">Press Enter after each skill</div>
+      </div>
+
+      <div class="form-group">
+        <label>Soft Skills</label>
+        <div class="skills-container" id="softSkillsContainer" onclick="document.getElementById('softSkillInput').focus()">
+          <input class="skill-input" id="softSkillInput" placeholder="Type a skill + Enter" onkeydown="addSkill(event, 'softSkills')">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Tools & Technologies</label>
+        <div class="skills-container" id="toolsContainer" onclick="document.getElementById('toolsInput').focus()">
+          <input class="skill-input" id="toolsInput" placeholder="Type a tool + Enter" onkeydown="addSkill(event, 'tools')">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Languages</label>
+        <div class="skills-container" id="languagesContainer" onclick="document.getElementById('languagesInput').focus()">
+          <input class="skill-input" id="languagesInput" placeholder="e.g. English (Native) + Enter" onkeydown="addSkill(event, 'languages')">
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 5: MORE -->
+    <div class="form-section" id="sec-5">
+      <div class="section-title">
+        <div class="icon">🏆</div>
+        Certifications & Projects
+      </div>
+
+      <div class="ats-tip"><strong>ATS Tip:</strong> Include certification acronyms AND full names. E.g., "AWS Certified Solutions Architect (AWS-SAA-C03)".</div>
+
+      <div style="margin-bottom:16px">
+        <div class="entry-header" style="margin-bottom:10px">
+          <span class="entry-label">Certifications</span>
+        </div>
+        <div id="certs-list"></div>
+        <button class="btn-add" onclick="addCert()">+ Add Certification</button>
+      </div>
+
+      <div style="margin-bottom:16px; margin-top:20px">
+        <div class="entry-header" style="margin-bottom:10px">
+          <span class="entry-label">Projects</span>
+        </div>
+        <div id="projects-list"></div>
+        <button class="btn-add" onclick="addProject()">+ Add Project</button>
+      </div>
+
+      <!-- ATS SCORE -->
+      <div class="score-display">
+        <div class="score-ring">
+          <svg width="80" height="80" viewBox="0 0 80 80">
+            <circle class="bg-circle" cx="40" cy="40" r="34"/>
+            <circle class="progress-circle" id="scoreCircle" cx="40" cy="40" r="34"/>
+          </svg>
+          <div class="score-text" id="scoreText">0%</div>
+        </div>
+        <div class="score-info" style="flex:1">
+          <h3>ATS Score</h3>
+          <p id="scoreDesc">Fill in your details to see your ATS compatibility score.</p>
+          <div class="score-breakdown" id="scoreBreakdown"></div>
+        </div>
+      </div>
+
+      <button class="btn-generate" onclick="generateResume()">
+        ✨ Generate ATS-Optimized Resume
+      </button>
+      <button class="btn-download" onclick="downloadResume()">
+        ⬇ Download as PDF
+      </button>
+    </div>
+
+    <!-- NAV -->
+    <div class="nav-buttons">
+      <button class="btn-prev" onclick="prevSection()">← Back</button>
+      <button class="btn-next" onclick="nextSection()">Continue →</button>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: PREVIEW -->
+  <div class="preview-panel">
+    <div id="resume-preview">
+      <div class="empty-preview" id="empty-state">
+        <div class="icon">📄</div>
+        <p>Start filling in your details<br>to see your ATS resume preview</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========================
+// STATE
+// ========================
+let currentSection = 0;
+const totalSections = 6;
+
+const state = {
+  personal: {},
+  summary: '',
+  experience: [],
+  education: [],
+  skills: { techSkills: [], softSkills: [], tools: [], languages: [] },
+  certifications: [],
+  projects: []
+};
+
+// ========================
+// SECTION NAVIGATION
+// ========================
+function goSection(idx) {
+  document.querySelectorAll('.form-section').forEach((s, i) => {
+    s.classList.toggle('active', i === idx);
+  });
+  document.querySelectorAll('.section-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === idx);
+  });
+  currentSection = idx;
+  updateProgress();
+}
+
+function nextSection() {
+  if (currentSection < totalSections - 1) goSection(currentSection + 1);
+}
+
+function prevSection() {
+  if (currentSection > 0) goSection(currentSection - 1);
+}
+
+function updateProgress() {
+  const bar = document.getElementById('progressBar');
+  bar.innerHTML = '';
+  for (let i = 0; i < totalSections; i++) {
+    const step = document.createElement('div');
+    step.className = 'progress-step' + (i < currentSection ? ' done' : '') + (i === currentSection ? ' active' : '');
+    bar.appendChild(step);
+  }
+}
+
+updateProgress();
+
+// ========================
+// EXPERIENCE
+// ========================
+let expCount = 0;
+
+function addExperience() {
+  const id = 'exp_' + (++expCount);
+  const div = document.createElement('div');
+  div.className = 'entry-card';
+  div.id = id;
+  div.innerHTML = `
+    <div class="entry-header">
+      <span class="entry-label">Experience #${expCount}</span>
+      <button class="btn-remove" onclick="removeEntry('${id}', 'experience', ${expCount-1})">Remove</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Job Title *</label>
+        <input type="text" data-field="title" placeholder="Software Engineer" oninput="autoUpdate()">
+      </div>
+      <div class="form-group">
+        <label>Company Name *</label>
+        <input type="text" data-field="company" placeholder="Google LLC" oninput="autoUpdate()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Location</label>
+        <input type="text" data-field="location" placeholder="Mountain View, CA" oninput="autoUpdate()">
+      </div>
+      <div class="form-group">
+        <label>Employment Type</label>
+        <select data-field="type" onchange="autoUpdate()">
+          <option>Full-Time</option>
+          <option>Part-Time</option>
+          <option>Contract</option>
+          <option>Internship</option>
+          <option>Freelance</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Start Date</label>
+        <input type="text" data-field="startDate" placeholder="Jan 2020" oninput="autoUpdate()">
+      </div>
+      <div class="form-group">
+        <label>End Date</label>
+        <input type="text" data-field="endDate" placeholder="Present" oninput="autoUpdate()">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Key Achievements & Responsibilities</label>
+      <textarea data-field="bullets" rows="4" placeholder="• Developed REST APIs using Python/Django serving 500K+ daily requests&#10;• Reduced page load time by 45% through caching strategies&#10;• Led team of 5 engineers to deliver project 2 weeks ahead of schedule" oninput="autoUpdate()"></textarea>
+      <div class="helper">Use bullet points with action verbs + numbers/metrics for best ATS score</div>
+    </div>
+  `;
+  document.getElementById('experience-list').appendChild(div);
+  state.experience.push({ _id: id, title:'', company:'', location:'', type:'Full-Time', startDate:'', endDate:'', bullets:'' });
+}
+
+// ========================
+// EDUCATION
+// ========================
+let eduCount = 0;
+
+function addEducation() {
+  const id = 'edu_' + (++eduCount);
+  const div = document.createElement('div');
+  div.className = 'entry-card';
+  div.id = id;
+  div.innerHTML = `
+    <div class="entry-header">
+      <span class="entry-label">Education #${eduCount}</span>
+      <button class="btn-remove" onclick="removeEntry('${id}', 'education', ${eduCount-1})">Remove</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Degree *</label>
+        <input type="text" data-field="degree" placeholder="Bachelor of Science in Computer Science" oninput="autoUpdate()">
+      </div>
+      <div class="form-group">
+        <label>Institution *</label>
+        <input type="text" data-field="institution" placeholder="Massachusetts Institute of Technology" oninput="autoUpdate()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Location</label>
+        <input type="text" data-field="location" placeholder="Cambridge, MA" oninput="autoUpdate()">
+      </div>
+      <div class="form-group">
+        <label>GPA (optional)</label>
+        <input type="text" data-field="gpa" placeholder="3.8/4.0" oninput="autoUpdate()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Graduation Year</label>
+        <input type="text" data-field="gradYear" placeholder="May 2022" oninput="autoUpdate()">
+      </div>
+      <div class="form-group">
+        <label>Relevant Coursework (optional)</label>
+        <input type="text" data-field="courses" placeholder="Data Structures, Algorithms, ML" oninput="autoUpdate()">
+      </div>
+    </div>
+  `;
+  document.getElementById('education-list').appendChild(div);
+  state.education.push({ _id: id });
+}
+
+// ========================
+// CERTIFICATIONS
+// ========================
+let certCount = 0;
+
+function addCert() {
+  const id = 'cert_' + (++certCount);
+  const div = document.createElement('div');
+  div.className = 'entry-card';
+  div.id = id;
+  div.innerHTML = `
+    <div class="entry-header">
+      <span class="entry-label">Certification #${certCount}</span>
+      <button class="btn-remove" onclick="removeEntry('${id}', 'certifications', ${certCount-1})">Remove</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Certification Name</label>
+        <input type="text" data-field="name" placeholder="AWS Certified Solutions Architect" oninput="autoUpdate()">
+      </div>
+      <div class="form-group">
+        <label>Issuing Organization</label>
+        <input type="text" data-field="issuer" placeholder="Amazon Web Services" oninput="autoUpdate()">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Issue Date</label>
+        <input type="text" data-field="issueDate" placeholder="Mar 2023" oninput="autoUpdate()">
+      </div>
+      <div class="form-group">
+        <label>Credential ID (optional)</label>
+        <input type="text" data-field="credId" placeholder="AWS-SAA-C03-12345" oninput="autoUpdate()">
+      </div>
+    </div>
+  `;
+  document.getElementById('certs-list').appendChild(div);
+  state.certifications.push({ _id: id });
+}
+
+// ========================
+// PROJECTS
+// ========================
+let projCount = 0;
+
+function addProject() {
+  const id = 'proj_' + (++projCount);
+  const div = document.createElement('div');
+  div.className = 'entry-card';
+  div.id = id;
+  div.innerHTML = `
+    <div class="entry-header">
+      <span class="entry-label">Project #${projCount}</span>
+      <button class="btn-remove" onclick="removeEntry('${id}', 'projects', ${projCount-1})">Remove</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Project Name</label>
+        <input type="text" data-field="name" placeholder="E-commerce Platform" oninput="autoUpdate()">
+      </div>
+      <div class="form-group">
+        <label>Technologies Used</label>
+        <input type="text" data-field="tech" placeholder="React, Node.js, PostgreSQL" oninput="autoUpdate()">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Description & Impact</label>
+      <textarea data-field="desc" rows="3" placeholder="• Built full-stack e-commerce platform handling 10K+ daily transactions&#10;• Implemented JWT auth, reducing security incidents by 100%" oninput="autoUpdate()"></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>GitHub/Live URL</label>
+        <input type="text" data-field="url" placeholder="github.com/johndoe/project" oninput="autoUpdate()">
+      </div>
+      <div class="form-group">
+        <label>Date</label>
+        <input type="text" data-field="date" placeholder="2023" oninput="autoUpdate()">
+      </div>
+    </div>
+  `;
+  document.getElementById('projects-list').appendChild(div);
+  state.projects.push({ _id: id });
+}
+
+function removeEntry(id, type, idx) {
+  document.getElementById(id)?.remove();
+}
+
+// ========================
+// SKILLS TAG INPUT
+// ========================
+const skillsData = { techSkills: [], softSkills: [], tools: [], languages: [] };
+
+const containerMap = {
+  techSkills: 'techSkillsContainer',
+  softSkills: 'softSkillsContainer',
+  tools: 'toolsContainer',
+  languages: 'languagesContainer'
+};
+
+const inputMap = {
+  techSkills: 'techSkillInput',
+  softSkills: 'softSkillInput',
+  tools: 'toolsInput',
+  languages: 'languagesInput'
+};
+
+function addSkill(event, category) {
+  if (event.key !== 'Enter' && event.key !== ',') return;
+  event.preventDefault();
+  const input = document.getElementById(inputMap[category]);
+  const val = input.value.trim().replace(/,$/, '');
+  if (!val) return;
+  skillsData[category].push(val);
+  const tag = document.createElement('div');
+  tag.className = 'skill-tag';
+  tag.innerHTML = `${val}<span class="remove-skill" onclick="removeSkill(this, '${category}', '${val}')">×</span>`;
+  document.getElementById(containerMap[category]).insertBefore(tag, input);
+  input.value = '';
+  autoUpdate();
+}
+
+function removeSkill(el, category, val) {
+  skillsData[category] = skillsData[category].filter(s => s !== val);
+  el.parentElement.remove();
+  autoUpdate();
+}
+
+// ========================
+// COLLECT DATA
+// ========================
+function collectData() {
+  const data = {};
+  data.firstName = document.getElementById('firstName').value.trim();
+  data.lastName = document.getElementById('lastName').value.trim();
+  data.jobTitle = document.getElementById('jobTitle').value.trim();
+  data.email = document.getElementById('email').value.trim();
+  data.phone = document.getElementById('phone').value.trim();
+  data.location = document.getElementById('location').value.trim();
+  data.linkedin = document.getElementById('linkedin').value.trim();
+  data.github = document.getElementById('github').value.trim();
+  data.website = document.getElementById('website').value.trim();
+  data.summary = document.getElementById('summary').value.trim();
+  data.targetRole = document.getElementById('targetRole').value.trim();
+
+  // Update char count
+  const sum = document.getElementById('summary').value;
+  document.getElementById('summaryCount').textContent = `${sum.length} / 600 characters (aim for 300–500)`;
+
+  // Experience
+  data.experience = [];
+  document.querySelectorAll('#experience-list .entry-card').forEach(card => {
+    const entry = {};
+    card.querySelectorAll('[data-field]').forEach(el => {
+      entry[el.dataset.field] = el.value.trim();
+    });
+    data.experience.push(entry);
+  });
+
+  // Education
+  data.education = [];
+  document.querySelectorAll('#education-list .entry-card').forEach(card => {
+    const entry = {};
+    card.querySelectorAll('[data-field]').forEach(el => {
+      entry[el.dataset.field] = el.value.trim();
+    });
+    data.education.push(entry);
+  });
+
+  // Skills
+  data.skills = { ...skillsData };
+
+  // Certs
+  data.certifications = [];
+  document.querySelectorAll('#certs-list .entry-card').forEach(card => {
+    const entry = {};
+    card.querySelectorAll('[data-field]').forEach(el => {
+      entry[el.dataset.field] = el.value.trim();
+    });
+    data.certifications.push(entry);
+  });
+
+  // Projects
+  data.projects = [];
+  document.querySelectorAll('#projects-list .entry-card').forEach(card => {
+    const entry = {};
+    card.querySelectorAll('[data-field]').forEach(el => {
+      entry[el.dataset.field] = el.value.trim();
+    });
+    data.projects.push(entry);
+  });
+
+  return data;
+}
+
+// ========================
+// ATS SCORE CALCULATION
+// ========================
+function calcATSScore(data) {
+  const scores = {};
+
+  // Contact info (20 pts)
+  let contact = 0;
+  if (data.firstName && data.lastName) contact += 5;
+  if (data.email) contact += 5;
+  if (data.phone) contact += 5;
+  if (data.location) contact += 3;
+  if (data.linkedin) contact += 2;
+  scores.contact = Math.min(20, contact);
+
+  // Summary (20 pts)
+  let sumScore = 0;
+  if (data.summary) {
+    sumScore += 10;
+    if (data.summary.length >= 200) sumScore += 5;
+    if (data.jobTitle && data.summary.toLowerCase().includes(data.jobTitle.toLowerCase().split(' ')[0])) sumScore += 5;
+  }
+  scores.summary = Math.min(20, sumScore);
+
+  // Experience (25 pts)
+  let expScore = 0;
+  if (data.experience.length > 0) {
+    expScore += 10;
+    data.experience.forEach(e => {
+      if (e.title) expScore += 3;
+      if (e.company) expScore += 2;
+      if (e.bullets && e.bullets.length > 50) expScore += 5;
+      if (e.startDate) expScore += 2;
+    });
+  }
+  scores.experience = Math.min(25, expScore);
+
+  // Education (15 pts)
+  let eduScore = 0;
+  if (data.education.length > 0) {
+    eduScore += 8;
+    data.education.forEach(e => {
+      if (e.degree) eduScore += 4;
+      if (e.institution) eduScore += 3;
+    });
+  }
+  scores.education = Math.min(15, eduScore);
+
+  // Skills (20 pts)
+  const totalSkills = data.skills.techSkills.length + data.skills.softSkills.length + data.skills.tools.length;
+  let skillScore = 0;
+  if (totalSkills >= 5) skillScore = 10;
+  if (totalSkills >= 10) skillScore = 15;
+  if (totalSkills >= 15) skillScore = 20;
+  scores.skills = skillScore;
+
+  const total = Object.values(scores).reduce((a, b) => a + b, 0);
+
+  return { scores, total };
+}
+
+function updateScoreUI(total, scores) {
+  const circle = document.getElementById('scoreCircle');
+  const text = document.getElementById('scoreText');
+  const desc = document.getElementById('scoreDesc');
+
+  const offset = 220 - (220 * total / 100);
+  circle.style.strokeDashoffset = offset;
+
+  const color = total >= 80 ? '#00e5a0' : total >= 50 ? '#f59e0b' : '#ff4d6d';
+  circle.style.stroke = color;
+  text.style.color = color;
+  text.textContent = total + '%';
+
+  if (total >= 90) desc.textContent = '🎉 Excellent! This resume is highly ATS-optimized.';
+  else if (total >= 70) desc.textContent = '✅ Good score! A few more details will push to 100%.';
+  else if (total >= 50) desc.textContent = '⚠️ Add more details to improve your ATS score.';
+  else desc.textContent = '❌ Fill in all sections for a 100% ATS score.';
+
+  // Breakdown
+  const breakdown = document.getElementById('scoreBreakdown');
+  breakdown.innerHTML = '';
+  const items = [
+    { label: 'Contact', val: scores.contact, max: 20 },
+    { label: 'Summary', val: scores.summary, max: 20 },
+    { label: 'Experience', val: scores.experience, max: 25 },
+    { label: 'Education', val: scores.education, max: 15 },
+    { label: 'Skills', val: scores.skills, max: 20 },
+  ];
+  items.forEach(item => {
+    const pct = Math.round((item.val / item.max) * 100);
+    breakdown.innerHTML += `
+      <div class="score-item">
+        <span class="label">${item.label}</span>
+        <div class="bar"><div class="fill" style="width:${pct}%"></div></div>
+        <span class="val">${item.val}/${item.max}</span>
+      </div>`;
+  });
+}
+
+// ========================
+// AUTO UPDATE PREVIEW
+// ========================
+let updateTimer = null;
+function autoUpdate() {
+  clearTimeout(updateTimer);
+  updateTimer = setTimeout(() => {
+    const data = collectData();
+    const { scores, total } = calcATSScore(data);
+    updateScoreUI(total, scores);
+    renderPreview(data);
+  }, 200);
+}
+
+// ========================
+// GENERATE RESUME
+// ========================
+function generateResume() {
+  const data = collectData();
+  renderPreview(data);
+  goSection(5);
+  const { scores, total } = calcATSScore(data);
+  updateScoreUI(total, scores);
+
+  // Scroll to preview
+  document.querySelector('.preview-panel').scrollTo({ top: 0, behavior: 'smooth' });
+
+  // Success flash
+  const btn = document.querySelector('.btn-generate');
+  btn.textContent = '✅ Resume Generated!';
+  btn.style.background = 'linear-gradient(135deg, #00e5a0, #00c97d)';
+  setTimeout(() => {
+    btn.textContent = '✨ Re-Generate Resume';
+  }, 2000);
+}
+
+function renderPreview(data) {
+  const hasData = data.firstName || data.email || data.summary || data.experience.length > 0;
+  if (!hasData) {
+    document.getElementById('resume-preview').innerHTML = `
+      <div class="empty-preview" id="empty-state">
+        <div class="icon">📄</div>
+        <p>Start filling in your details<br>to see your ATS resume preview</p>
+      </div>`;
+    return;
+  }
+
+  const allSkills = [...data.skills.techSkills, ...data.skills.tools];
+  const softSkills = data.skills.softSkills;
+  const languages = data.skills.languages;
+
+  // Contact line
+  const contacts = [];
+  if (data.phone) contacts.push(`📞 ${data.phone}`);
+  if (data.email) contacts.push(`✉ ${data.email}`);
+  if (data.location) contacts.push(`📍 ${data.location}`);
+  if (data.linkedin) contacts.push(`🔗 ${data.linkedin}`);
+  if (data.github) contacts.push(`💻 ${data.github}`);
+  if (data.website) contacts.push(`🌐 ${data.website}`);
+
+  let html = `
+    <div class="r-name">${data.firstName} ${data.lastName}</div>
+    <div class="r-title">${data.jobTitle || data.targetRole || ''}</div>
+    <div class="r-contact">
+      ${contacts.map(c => `<span>${c}</span>`).join('')}
+    </div>`;
+
+  // SUMMARY
+  if (data.summary) {
+    html += `
+      <div class="r-section">
+        <div class="r-section-title">Professional Summary</div>
+        <div class="r-summary">${data.summary}</div>
+      </div>`;
+  }
+
+  // EXPERIENCE
+  if (data.experience.length > 0) {
+    html += `<div class="r-section"><div class="r-section-title">Professional Experience</div>`;
+    data.experience.forEach(exp => {
+      if (!exp.title && !exp.company) return;
+      const bullets = exp.bullets ? exp.bullets.split('\n').filter(b => b.trim()) : [];
+      html += `
+        <div class="r-entry">
+          <div class="r-entry-header">
+            <span class="r-entry-title">${exp.title || ''}</span>
+            <span class="r-entry-date">${exp.startDate || ''} – ${exp.endDate || 'Present'}</span>
+          </div>
+          <div class="r-entry-org">${exp.company || ''}${exp.location ? ` | ${exp.location}` : ''}${exp.type ? ` | ${exp.type}` : ''}</div>
+          ${bullets.length > 0 ? `<ul class="r-bullets">${bullets.map(b => `<li>${b.replace(/^[•\-\*]\s*/, '')}</li>`).join('')}</ul>` : ''}
+        </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // EDUCATION
+  if (data.education.length > 0) {
+    html += `<div class="r-section"><div class="r-section-title">Education</div>`;
+    data.education.forEach(edu => {
+      if (!edu.degree && !edu.institution) return;
+      html += `
+        <div class="r-entry">
+          <div class="r-entry-header">
+            <span class="r-entry-title">${edu.degree || ''}</span>
+            <span class="r-entry-date">${edu.gradYear || ''}</span>
+          </div>
+          <div class="r-entry-org">${edu.institution || ''}${edu.location ? ` | ${edu.location}` : ''}</div>
+          ${edu.gpa ? `<div class="r-entry-location">GPA: ${edu.gpa}</div>` : ''}
+          ${edu.courses ? `<div class="r-entry-location">Relevant Coursework: ${edu.courses}</div>` : ''}
+        </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // SKILLS
+  if (allSkills.length > 0 || softSkills.length > 0) {
+    html += `<div class="r-section"><div class="r-section-title">Skills</div>`;
+    if (allSkills.length > 0) {
+      html += `<div style="margin-bottom:6px"><span style="font-size:9pt;font-weight:700;color:#333">Technical: </span>
+        <span style="font-size:9.5pt;color:#333">${allSkills.join(' • ')}</span></div>`;
+    }
+    if (softSkills.length > 0) {
+      html += `<div style="margin-bottom:6px"><span style="font-size:9pt;font-weight:700;color:#333">Soft Skills: </span>
+        <span style="font-size:9.5pt;color:#333">${softSkills.join(' • ')}</span></div>`;
+    }
+    if (languages.length > 0) {
+      html += `<div><span style="font-size:9pt;font-weight:700;color:#333">Languages: </span>
+        <span style="font-size:9.5pt;color:#333">${languages.join(' • ')}</span></div>`;
+    }
+    html += `</div>`;
+  }
+
+  // CERTIFICATIONS
+  if (data.certifications.length > 0 && data.certifications.some(c => c.name)) {
+    html += `<div class="r-section"><div class="r-section-title">Certifications</div><div class="r-two-col">`;
+    data.certifications.forEach(cert => {
+      if (!cert.name) return;
+      html += `
+        <div class="r-cert-item">
+          <div class="r-cert-name">${cert.name}</div>
+          <div class="r-cert-issuer">${cert.issuer || ''} ${cert.issueDate ? `| ${cert.issueDate}` : ''}</div>
+        </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // PROJECTS
+  if (data.projects.length > 0 && data.projects.some(p => p.name)) {
+    html += `<div class="r-section"><div class="r-section-title">Projects</div>`;
+    data.projects.forEach(proj => {
+      if (!proj.name) return;
+      const bullets = proj.desc ? proj.desc.split('\n').filter(b => b.trim()) : [];
+      html += `
+        <div class="r-entry">
+          <div class="r-entry-header">
+            <span class="r-entry-title">${proj.name}${proj.tech ? ` | ${proj.tech}` : ''}</span>
+            <span class="r-entry-date">${proj.date || ''}</span>
+          </div>
+          ${proj.url ? `<div class="r-entry-org">${proj.url}</div>` : ''}
+          ${bullets.length > 0 ? `<ul class="r-bullets">${bullets.map(b => `<li>${b.replace(/^[•\-\*]\s*/, '')}</li>`).join('')}</ul>` : ''}
+        </div>`;
+    });
+    html += `</div>`;
+  }
+
+  document.getElementById('resume-preview').innerHTML = html;
+}
+
+// ========================
+// PDF DOWNLOAD
+// ========================
+function downloadResume() {
+  const data = collectData();
+  if (!data.firstName && !data.email) {
+    alert('Please fill in at least your name and email before downloading.');
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ format: 'letter', unit: 'pt' });
+
+  const margin = 50;
+  const pageW = 612;
+  const pageH = 792;
+  const contentW = pageW - margin * 2;
+  let y = margin;
+
+  const accentColor = [37, 99, 235];
+
+  function checkPage(needed = 20) {
+    if (y + needed > pageH - 40) { doc.addPage(); y = margin; }
+  }
+
+  function sectionHeader(title) {
+    checkPage(30);
+    y += 8;
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(20, 20, 20);
+    const text = title.toUpperCase();
+    doc.text(text, margin, y);
+    y += 4;
+    doc.setDrawColor(20, 20, 20);
+    doc.setLineWidth(1.2);
+    doc.line(margin, y, margin + contentW, y);
+    y += 10;
+  }
+
+  function wrapText(text, x, maxW, fontSize = 10, color = [50,50,50]) {
+    doc.setFontSize(fontSize);
+    doc.setTextColor(...color);
+    const lines = doc.splitTextToSize(text, maxW);
+    lines.forEach(line => {
+      checkPage(fontSize + 4);
+      doc.text(line, x, y);
+      y += fontSize + 3;
+    });
+  }
+
+  // NAME
+  doc.setFontSize(22);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(10, 10, 10);
+  doc.text(`${data.firstName} ${data.lastName}`.toUpperCase(), margin, y);
+  y += 24;
+
+  // TITLE
+  if (data.jobTitle) {
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...accentColor);
+    doc.text(data.jobTitle.toUpperCase(), margin, y);
+    y += 16;
+  }
+
+  // CONTACT
+  const contacts = [data.phone, data.email, data.location, data.linkedin, data.github].filter(Boolean);
+  doc.setFontSize(8.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(60, 60, 60);
+  const contactStr = contacts.join('  |  ');
+  const lines = doc.splitTextToSize(contactStr, contentW);
+  lines.forEach(l => { doc.text(l, margin, y); y += 11; });
+  y += 2;
+  doc.setDrawColor(20, 20, 20);
+  doc.setLineWidth(1.5);
+  doc.line(margin, y, margin + contentW, y);
+  y += 12;
+
+  // SUMMARY
+  if (data.summary) {
+    sectionHeader('Professional Summary');
+    doc.setFont('helvetica', 'normal');
+    wrapText(data.summary, margin, contentW, 10, [40, 40, 40]);
+    y += 4;
+  }
+
+  // EXPERIENCE
+  if (data.experience.length > 0 && data.experience.some(e => e.title)) {
+    sectionHeader('Professional Experience');
+    data.experience.forEach(exp => {
+      if (!exp.title) return;
+      checkPage(40);
+      // Title + Date
+      doc.setFontSize(10.5);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(10, 10, 10);
+      doc.text(exp.title, margin, y);
+      const dateStr = `${exp.startDate || ''} – ${exp.endDate || 'Present'}`;
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(80, 80, 80);
+      doc.text(dateStr, margin + contentW - doc.getTextWidth(dateStr), y);
+      y += 14;
+
+      // Company
+      const compLine = [exp.company, exp.location, exp.type].filter(Boolean).join(' | ');
+      doc.setFontSize(9.5);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...accentColor);
+      doc.text(compLine, margin, y);
+      y += 12;
+
+      // Bullets
+      if (exp.bullets) {
+        const bullets = exp.bullets.split('\n').filter(b => b.trim());
+        bullets.forEach(bullet => {
+          const cleanBullet = bullet.replace(/^[•\-\*]\s*/, '');
+          const bullLines = doc.splitTextToSize('• ' + cleanBullet, contentW - 10);
+          doc.setFontSize(9.5);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(50, 50, 50);
+          bullLines.forEach((bl, i) => {
+            checkPage(14);
+            doc.text(i === 0 ? bl : '  ' + bl.trimStart(), margin + 4, y);
+            y += 13;
+          });
+        });
+      }
+      y += 4;
+    });
+  }
+
+  // EDUCATION
+  if (data.education.length > 0 && data.education.some(e => e.degree)) {
+    sectionHeader('Education');
+    data.education.forEach(edu => {
+      if (!edu.degree) return;
+      checkPage(35);
+      doc.setFontSize(10.5);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(10, 10, 10);
+      doc.text(edu.degree, margin, y);
+      if (edu.gradYear) {
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(80, 80, 80);
+        doc.text(edu.gradYear, margin + contentW - doc.getTextWidth(edu.gradYear), y);
+      }
+      y += 13;
+      if (edu.institution) {
+        doc.setFontSize(9.5);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...accentColor);
+        doc.text([edu.institution, edu.location].filter(Boolean).join(' | '), margin, y);
+        y += 12;
+      }
+      if (edu.gpa) {
+        doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(70, 70, 70);
+        doc.text(`GPA: ${edu.gpa}`, margin, y); y += 11;
+      }
+      if (edu.courses) {
+        doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(70, 70, 70);
+        const cLines = doc.splitTextToSize(`Coursework: ${edu.courses}`, contentW);
+        cLines.forEach(cl => { checkPage(12); doc.text(cl, margin, y); y += 11; });
+      }
+      y += 4;
+    });
+  }
+
+  // SKILLS
+  const allTechSkills = [...data.skills.techSkills, ...data.skills.tools];
+  if (allTechSkills.length > 0 || data.skills.softSkills.length > 0) {
+    sectionHeader('Skills');
+    if (allTechSkills.length > 0) {
+      doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 30, 30);
+      doc.text('Technical:', margin, y);
+      doc.setFont('helvetica', 'normal'); doc.setTextColor(50, 50, 50);
+      const techLine = doc.splitTextToSize(allTechSkills.join(' • '), contentW - 60);
+      doc.text(techLine[0] || '', margin + 55, y); y += 12;
+      for (let i = 1; i < techLine.length; i++) { checkPage(12); doc.text(techLine[i], margin + 55, y); y += 12; }
+    }
+    if (data.skills.softSkills.length > 0) {
+      doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 30, 30);
+      doc.text('Soft Skills:', margin, y);
+      doc.setFont('helvetica', 'normal'); doc.setTextColor(50, 50, 50);
+      const softLine = doc.splitTextToSize(data.skills.softSkills.join(' • '), contentW - 65);
+      doc.text(softLine[0] || '', margin + 60, y); y += 12;
+    }
+    if (data.skills.languages.length > 0) {
+      doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 30, 30);
+      doc.text('Languages:', margin, y);
+      doc.setFont('helvetica', 'normal'); doc.setTextColor(50, 50, 50);
+      doc.text(data.skills.languages.join(' • '), margin + 62, y); y += 12;
+    }
+    y += 4;
+  }
+
+  // CERTIFICATIONS
+  if (data.certifications.some(c => c.name)) {
+    sectionHeader('Certifications');
+    data.certifications.forEach(cert => {
+      if (!cert.name) return;
+      checkPage(22);
+      doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(10, 10, 10);
+      doc.text(cert.name, margin, y);
+      if (cert.issueDate) {
+        doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
+        doc.text(cert.issueDate, margin + contentW - doc.getTextWidth(cert.issueDate), y);
+      }
+      y += 12;
+      if (cert.issuer) {
+        doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(70, 70, 70);
+        doc.text(cert.issuer + (cert.credId ? ` | ID: ${cert.credId}` : ''), margin, y); y += 12;
+      }
+    });
+    y += 4;
+  }
+
+  // PROJECTS
+  if (data.projects.some(p => p.name)) {
+    sectionHeader('Projects');
+    data.projects.forEach(proj => {
+      if (!proj.name) return;
+      checkPage(35);
+      doc.setFontSize(10.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(10, 10, 10);
+      doc.text(proj.name + (proj.tech ? ` | ${proj.tech}` : ''), margin, y);
+      if (proj.date) {
+        doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
+        doc.text(proj.date, margin + contentW - doc.getTextWidth(proj.date), y);
+      }
+      y += 13;
+      if (proj.url) {
+        doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(...accentColor);
+        doc.text(proj.url, margin, y); y += 12;
+      }
+      if (proj.desc) {
+        const bullets = proj.desc.split('\n').filter(b => b.trim());
+        bullets.forEach(bullet => {
+          const clean = bullet.replace(/^[•\-\*]\s*/, '');
+          const bLines = doc.splitTextToSize('• ' + clean, contentW - 10);
+          doc.setFontSize(9.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(50, 50, 50);
+          bLines.forEach((bl, i) => { checkPage(12); doc.text(i === 0 ? bl : '  ' + bl.trimStart(), margin + 4, y); y += 13; });
+        });
+      }
+      y += 4;
+    });
+  }
+
+  const filename = `${data.firstName || 'My'}_${data.lastName || 'Resume'}_ATS_Resume.pdf`;
+  doc.save(filename);
+}
+
+// Init with one experience and one education
+addExperience();
+addEducation();
+</script>
+</body>
+</html>
